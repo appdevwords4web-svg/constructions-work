@@ -5,8 +5,9 @@ interface OwnerDetailsFormProps {
   ownerAddress: string;
   ownerPhone: string;
   ownerEmail: string;
+  ownerWebsite: string;
   onChangeField: (
-    field: "ownerAddress" | "ownerPhone" | "ownerEmail",
+    field: "ownerAddress" | "ownerPhone" | "ownerEmail" | "ownerWebsite",
     value: string,
   ) => void;
 }
@@ -15,6 +16,7 @@ export function OwnerDetailsForm({
   ownerAddress,
   ownerPhone,
   ownerEmail,
+  ownerWebsite,
   onChangeField,
 }: OwnerDetailsFormProps) {
   return (
@@ -42,6 +44,13 @@ export function OwnerDetailsForm({
           placeholder="liveconstructionsltd@gmail.com"
           value={ownerEmail}
           onChange={(val) => onChangeField("ownerEmail", val)}
+        />
+        <FormInput
+          label="Website"
+          type="url"
+          placeholder="https://liveconstructionsltd.co.uk"
+          value={ownerWebsite}
+          onChange={(val) => onChangeField("ownerWebsite", val)}
         />
       </div>
     </section>

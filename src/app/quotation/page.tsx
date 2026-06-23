@@ -16,7 +16,12 @@ import { GeneratorHeader } from "@/components/GeneratorHeader";
 import { FormInput, FormTextarea } from "@/components/FormFields";
 import { OwnerDetailsForm } from "@/components/OwnerDetailsForm";
 import { ClientDetailsForm } from "@/components/ClientDetailsForm";
-import { PinIcon, PhoneIcon, EmailIcon } from "@/components/CompanyIcons";
+import {
+  PinIcon,
+  PhoneIcon,
+  EmailIcon,
+  WebsiteIcon,
+} from "@/components/CompanyIcons";
 
 const DEFAULT_ITEMS: QuotationLineItem[] = [
   {
@@ -37,6 +42,7 @@ const DEFAULT_DATA: QuotationData = {
   ownerAddress: COMPANY.address,
   ownerPhone: COMPANY.phones.join(" / "),
   ownerEmail: COMPANY.email,
+  ownerWebsite: COMPANY.website,
   paymentTerms: DEFAULT_PAYMENT_TERMS,
 };
 
@@ -131,6 +137,7 @@ export default function QuotationPage() {
             ownerAddress={data.ownerAddress || ""}
             ownerPhone={data.ownerPhone || ""}
             ownerEmail={data.ownerEmail || ""}
+            ownerWebsite={data.ownerWebsite || COMPANY.website}
             onChangeField={(field, val) => setField(field, val)}
           />
 
@@ -359,10 +366,10 @@ export default function QuotationPage() {
                   <div
                     style={{
                       display: "flex",
-                      alignItems: "flex-start",
+                      alignItems: "center",
                       gap: "10px",
                     }}>
-                    <div style={{ flexShrink: 0, marginTop: "3px" }}>
+                    <div style={{ flexShrink: 0 }}>
                       <EmailIcon />
                     </div>
                     <div
@@ -372,6 +379,24 @@ export default function QuotationPage() {
                         lineHeight: "1.45",
                       }}>
                       {data.ownerEmail || COMPANY.email}
+                    </div>
+                  </div>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "10px",
+                    }}>
+                    <div style={{ flexShrink: 0 }}>
+                      <WebsiteIcon />
+                    </div>
+                    <div
+                      style={{
+                        fontWeight: "bold",
+                        color: "#000",
+                        lineHeight: "1.45",
+                      }}>
+                      {data.ownerWebsite || COMPANY.website}
                     </div>
                   </div>
                 </div>

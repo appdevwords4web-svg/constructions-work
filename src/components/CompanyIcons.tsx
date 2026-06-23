@@ -7,6 +7,8 @@ export const PHONE_SVG_STR = `<svg width="14" height="14" viewBox="0 0 24 24" fi
 
 export const EMAIL_SVG_STR = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="display: block;"><circle cx="12" cy="12" r="11" fill="black" stroke="black" stroke-width="1"/><path d="M16.5 8.5H7.5C6.9 8.5 6.5 8.9 6.5 9.5V14.5C6.5 15.1 6.9 15.5 7.5 15.5H16.5C17.1 15.5 17.5 15.1 17.5 14.5V9.5C17.5 8.9 17.1 8.5 16.5 8.5ZM16 10.1L12 12.5L8 10.1V9.5L12 11.9L16 9.5V10.1Z" fill="white"/></svg>`;
 
+export const WEBSITE_SVG_STR = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="display: block;"><circle cx="12" cy="12" r="11" fill="black" stroke="black" stroke-width="1"/><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z" fill="white"/></svg>`;
+
 // React Element Wrappers for use in live preview pages
 export function PinIcon() {
   return <div dangerouslySetInnerHTML={{ __html: PIN_SVG_STR }} />;
@@ -18,4 +20,8 @@ export function PhoneIcon() {
 
 export function EmailIcon() {
   return <div dangerouslySetInnerHTML={{ __html: EMAIL_SVG_STR }} />;
+}
+
+export function WebsiteIcon() {
+  return <div dangerouslySetInnerHTML={{ __html: WEBSITE_SVG_STR }} />;
 }
