@@ -2,6 +2,13 @@ import React from "react";
 import { InvoiceLineItem } from "./invoice";
 import { PaymentTerm, QuotationLineItem } from "./quotation";
 
+export type Tab = "form" | "preview";
+
+export interface MobileTabBarProps {
+  activeTab: Tab;
+  onTabChange: (tab: Tab) => void;
+}
+
 export interface BankDetailsFormProps {
   vatNo: string;
   bank: string;
