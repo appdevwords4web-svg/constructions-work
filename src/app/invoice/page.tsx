@@ -1,82 +1,40 @@
 "use client";
 
-import { useState, useCallback, useRef } from "react";
-import { COMPANY } from "@/lib/documentStyles";
+import { useRef } from "react";
+import { COMPANY } from "@/data/company";
 import { InvoiceData, InvoiceLineItem } from "@/types/invoice";
-import { buildInvoiceHtml, calcInvoiceTotals } from "@/lib/invoiceBuilder";
-import { printHtml } from "@/lib/print";
-import { getLogoBase64 } from "@/lib/logo";
+import { buildInvoiceHtml } from "@/lib/invoiceBuilder";
+import { calcInvoiceTotals } from "@/utils/invoice";
 import { GeneratorHeader } from "@/components/GeneratorHeader";
-import { FormInput, FormTextarea } from "@/components/FormFields";
+import { FormInput } from "@/components/FormFields";
 import { OwnerDetailsForm } from "@/components/OwnerDetailsForm";
 import { ClientDetailsForm } from "@/components/ClientDetailsForm";
 import { BankDetailsForm } from "@/components/BankDetailsForm";
-import {
-  PinIcon,
-  PhoneIcon,
-  EmailIcon,
-  WebsiteIcon,
-} from "@/components/CompanyIcons";
+import { InvoicePreviewHeader } from "@/components/invoice/InvoicePreviewHeader";
+import { InvoicePreviewClient } from "@/components/invoice/InvoicePreviewClient";
+import { InvoicePreviewTable } from "@/components/invoice/InvoicePreviewTable";
+import { InvoicePreviewFooter } from "@/components/invoice/InvoicePreviewFooter";
+import { InvoiceItemRowForm } from "@/components/invoice/InvoiceItemRowForm";
+import { useDocumentEditor } from "@/hooks/useDocumentEditor";
 
-const DEFAULT_ITEMS: InvoiceLineItem[] = [{ description: "", amount: "" }];
-
-const DEFAULT_DATA: InvoiceData = {
-  invoiceNo: "",
-  date: "",
-  utrNo: "",
-  clientAddress: "",
-  forProject: "Single Story Side Extension",
-  items: DEFAULT_ITEMS,
-  vatNo: "",
-  bank: "",
-  accountNo: "",
-  sortCode: "",
-  ownerAddress: COMPANY.address,
-  ownerPhone: COMPANY.phones.join(" / "),
-  ownerEmail: COMPANY.email,
-  ownerWebsite: COMPANY.website,
-};
+import { DEFAULT_DATA } from "@/data/invoice";
 
 export default function InvoicePage() {
-  const [data, setData] = useState<InvoiceData>(DEFAULT_DATA);
-  const [printing, setPrinting] = useState(false);
   const previewRef = useRef<HTMLDivElement>(null);
 
-  /* ── Helpers ──────────────────────────────────────────── */
-  const setField = (field: keyof InvoiceData, value: string) =>
-    setData((d) => ({ ...d, [field]: value }));
-
-  const setItem = (idx: number, field: keyof InvoiceLineItem, value: string) =>
-    setData((d) => ({
-      ...d,
-      items: d.items.map((it, i) =>
-        i === idx ? { ...it, [field]: value } : it,
-      ),
-    }));
-
-  const addItem = () =>
-    setData((d) => ({
-      ...d,
-      items: [...d.items, { description: "", amount: "" }],
-    }));
-
-  const removeItem = (idx: number) =>
-    setData((d) => ({
-      ...d,
-      items: d.items.length > 1 ? d.items.filter((_, i) => i !== idx) : d.items,
-    }));
-
-  /* ── Print ─────────────────────────────────────────────── */
-  const handlePrint = useCallback(async () => {
-    setPrinting(true);
-    try {
-      const logoBase64 = await getLogoBase64();
-      const html = buildInvoiceHtml(data, logoBase64);
-      printHtml(html);
-    } finally {
-      setTimeout(() => setPrinting(false), 1500);
-    }
-  }, [data]);
+  const {
+    data,
+    printing,
+    setField,
+    setItem,
+    addItem,
+    removeItem,
+    handlePrint,
+  } = useDocumentEditor<InvoiceData, InvoiceLineItem>(
+    DEFAULT_DATA,
+    () => ({ description: "", amount: "" }),
+    buildInvoiceHtml,
+  );
 
   const totals = calcInvoiceTotals(data.items);
 
@@ -138,39 +96,15 @@ export default function InvoicePage() {
               Line Items
             </h2>
             <div className="space-y-2">
-              {data.items.map((item, idx) => (
-                <div
+              {data?.items?.map((item, idx) => (
+                <InvoiceItemRowForm
                   key={idx}
-                  className="border border-gray-100 rounded-lg p-3 space-y-2 bg-gray-50">
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="text-xs font-semibold text-gray-400">
-                      Item {idx + 1}
-                    </span>
-                    {data.items.length > 1 && (
-                      <button
-                        onClick={() => removeItem(idx)}
-                        className="text-xs text-red-400 hover:text-red-655 cursor-pointer">
-                        Remove
-                      </button>
-                    )}
-                  </div>
-                  <FormTextarea
-                    label="Description"
-                    rows={2}
-                    placeholder="Description"
-                    value={item.description}
-                    onChange={(val) => setItem(idx, "description", val)}
-                  />
-                  <FormInput
-                    label="Amount"
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    placeholder="Amount (e.g. 2500)"
-                    value={item.amount}
-                    onChange={(val) => setItem(idx, "amount", val)}
-                  />
-                </div>
+                  idx={idx}
+                  item={item}
+                  showRemove={(data?.items?.length || 0) > 1}
+                  onRemove={() => removeItem(idx)}
+                  onChangeField={(field, val) => setItem(idx, field, val)}
+                />
               ))}
               <button
                 onClick={addItem}
@@ -211,10 +145,10 @@ export default function InvoicePage() {
           </section>
 
           <BankDetailsForm
-            vatNo={data.vatNo}
-            bank={data.bank}
-            accountNo={data.accountNo}
-            sortCode={data.sortCode}
+            vatNo={data?.vatNo}
+            bank={data?.bank}
+            accountNo={data?.accountNo}
+            sortCode={data?.sortCode}
             onChangeField={(field, val) => setField(field, val)}
           />
         </aside>
@@ -234,321 +168,10 @@ export default function InvoicePage() {
               color: "#111",
               flexShrink: 0,
             }}>
-            {/* HEADER */}
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "flex-start",
-                marginBottom: "24px",
-              }}>
-              <div>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src="/logo.png"
-                  alt="Live Constructions Ltd"
-                  style={{ width: "220px", height: "auto" }}
-                />
-                <div
-                  style={{
-                    marginTop: "10px",
-                    fontSize: "8.5pt",
-                    lineHeight: "1.65",
-                    color: "#000",
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: "8px",
-                  }}>
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "flex-start",
-                      gap: "10px",
-                    }}>
-                    <div style={{ flexShrink: 0, marginTop: "3px" }}>
-                      <PinIcon />
-                    </div>
-                    <div
-                      style={{
-                        fontWeight: "bold",
-                        color: "#000",
-                        lineHeight: "1.45",
-                        whiteSpace: "pre-wrap",
-                      }}>
-                      {data.ownerAddress || COMPANY.address}
-                    </div>
-                  </div>
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "flex-start",
-                      gap: "10px",
-                    }}>
-                    <div style={{ flexShrink: 0, marginTop: "3px" }}>
-                      <PhoneIcon />
-                    </div>
-                    <div
-                      style={{
-                        fontWeight: "bold",
-                        color: "#000",
-                        lineHeight: "1.45",
-                        whiteSpace: "pre-wrap",
-                      }}>
-                      {(data.ownerPhone || COMPANY.phones.join(" / "))
-                        .split(/\s*[\/\n]\s*/)
-                        .filter(Boolean)
-                        .join("\n")}
-                    </div>
-                  </div>
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "10px",
-                    }}>
-                    <div style={{ flexShrink: 0 }}>
-                      <EmailIcon />
-                    </div>
-                    <div
-                      style={{
-                        fontWeight: "bold",
-                        color: "#000",
-                        lineHeight: "1.45",
-                      }}>
-                      {data.ownerEmail || COMPANY.email}
-                    </div>
-                  </div>
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "10px",
-                    }}>
-                    <div style={{ flexShrink: 0 }}>
-                      <WebsiteIcon />
-                    </div>
-                    <div
-                      style={{
-                        fontWeight: "bold",
-                        color: "#000",
-                        lineHeight: "1.45",
-                      }}>
-                      {data.ownerWebsite || COMPANY.website}
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div style={{ textAlign: "right", minWidth: "240px" }}>
-                <div
-                  style={{
-                    background: "#1a56a0",
-                    height: "28px",
-                    clipPath: "polygon(10% 0%, 100% 0%, 100% 100%, 0% 100%)",
-                    marginBottom: "8px",
-                  }}
-                />
-                <div
-                  style={{
-                    fontSize: "24pt",
-                    fontWeight: 900,
-                    color: "#4a4a4a",
-                    marginBottom: "10px",
-                  }}>
-                  INVOICE
-                </div>
-                <table
-                  style={{
-                    marginLeft: "auto",
-                    fontSize: "9pt",
-                    borderCollapse: "collapse",
-                  }}>
-                  <tbody>
-                    <tr>
-                      <td
-                        style={{
-                          fontWeight: "bold",
-                          paddingRight: "10px",
-                          textAlign: "left",
-                        }}>
-                        INVOICE NO.
-                      </td>
-                      <td>{data.invoiceNo || "—"}</td>
-                    </tr>
-                    <tr>
-                      <td style={{ fontWeight: "bold", textAlign: "left" }}>
-                        DATE:
-                      </td>
-                      <td>{data.date || "—"}</td>
-                    </tr>
-                    <tr>
-                      <td style={{ fontWeight: "bold", textAlign: "left" }}>
-                        UTR NO.
-                      </td>
-                      <td>{data.utrNo || "—"}</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-
-            {/* CLIENT */}
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                margin: "14px 0 20px",
-                fontSize: "9.5pt",
-              }}>
-              <div>
-                <div style={{ fontWeight: "bold", marginBottom: "4px" }}>
-                  Client Address:
-                </div>
-                <div style={{ whiteSpace: "pre-wrap", lineHeight: "1.6" }}>
-                  {data.clientAddress || "—"}
-                </div>
-              </div>
-              <div style={{ textAlign: "right", whiteSpace: "pre-wrap" }}>
-                For: {data.forProject}
-              </div>
-            </div>
-
-            {/* ITEMS TABLE */}
-            <table
-              style={{
-                width: "100%",
-                borderCollapse: "collapse",
-                fontSize: "9.5pt",
-              }}>
-              <thead>
-                <tr>
-                  <th
-                    style={{
-                      border: "1px solid #000",
-                      padding: "7px 10px",
-                      textAlign: "center",
-                    }}>
-                    DESCRIPTION
-                  </th>
-                  <th
-                    style={{
-                      border: "1px solid #000",
-                      padding: "7px 10px",
-                      width: "110px",
-                      textAlign: "center",
-                    }}>
-                    AMOUNT
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {data.items.map((item, idx) => (
-                  <tr key={idx} style={{ minHeight: "24px" }}>
-                    <td
-                      style={{
-                        border: "1px solid #000",
-                        padding: "6px 10px",
-                        verticalAlign: "top",
-                        whiteSpace: "pre-wrap",
-                      }}>
-                      {item.description}
-                    </td>
-                    <td
-                      style={{
-                        border: "1px solid #000",
-                        padding: "6px 10px",
-                        textAlign: "right",
-                        width: "110px",
-                        whiteSpace: "nowrap",
-                      }}>
-                      {item.amount
-                        ? `£${parseFloat(item.amount.replace(/[^0-9.]/g, "") || "0").toLocaleString("en-GB", { minimumFractionDigits: 2 })}`
-                        : ""}
-                    </td>
-                  </tr>
-                ))}
-                {Array.from({ length: Math.max(0, 8 - data.items.length) }).map(
-                  (_, i) => (
-                    <tr key={`blank-${i}`} style={{ height: "26px" }}>
-                      <td style={{ border: "1px solid #000" }}></td>
-                      <td style={{ border: "1px solid #000" }}></td>
-                    </tr>
-                  ),
-                )}
-                <tr>
-                  <td
-                    style={{
-                      border: "1px solid #000",
-                      padding: "6px 10px",
-                      textAlign: "right",
-                      fontSize: "9pt",
-                    }}>
-                    VAT @ 20%
-                  </td>
-                  <td
-                    style={{
-                      border: "1px solid #000",
-                      padding: "6px 10px",
-                      textAlign: "right",
-                      width: "110px",
-                    }}>
-                    {totals.fmtVat}
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-
-            {/* AMOUNT PAYABLE */}
-            <table
-              style={{
-                width: "100%",
-                borderCollapse: "collapse",
-                fontSize: "9.5pt",
-              }}>
-              <tbody>
-                <tr>
-                  <td
-                    style={{
-                      border: "1px solid #000",
-                      borderTop: "none",
-                      padding: "7px 10px",
-                      fontWeight: "bold",
-                      textAlign: "right",
-                    }}>
-                    AMOUNT PAYABLE
-                  </td>
-                  <td
-                    style={{
-                      border: "2px solid #000",
-                      borderTop: "none",
-                      padding: "7px 10px",
-                      textAlign: "right",
-                      width: "110px",
-                      fontWeight: "bold",
-                    }}>
-                    {totals.fmtTotal}
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-
-            {/* FOOTER */}
-            <div
-              style={{ marginTop: "22px", fontSize: "9pt", lineHeight: "1.8" }}>
-              <div>
-                <strong>VAT NO:</strong> {data.vatNo}
-              </div>
-              <div>Company Registered in England and Wales No: 14326005</div>
-              <br />
-              <div>
-                <strong>BANK:</strong> {data.bank}
-              </div>
-              <div>
-                <strong>A/C No:</strong> {data.accountNo}
-              </div>
-              <div>
-                <strong>Sort Code:</strong> {data.sortCode}
-              </div>
-            </div>
+            <InvoicePreviewHeader data={data} />
+            <InvoicePreviewClient data={data} />
+            <InvoicePreviewTable items={data?.items} />
+            <InvoicePreviewFooter data={data} />
           </div>
         </main>
       </div>

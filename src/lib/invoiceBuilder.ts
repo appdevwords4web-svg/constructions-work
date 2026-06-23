@@ -1,26 +1,13 @@
-import { DOCUMENT_CSS, COMPANY } from "./documentStyles";
+import { DOCUMENT_CSS } from "./documentStyles";
+import { COMPANY } from "@/data/company";
 import {
   PIN_SVG_STR,
   PHONE_SVG_STR,
   EMAIL_SVG_STR,
   WEBSITE_SVG_STR,
 } from "../components/CompanyIcons";
-import { InvoiceLineItem, InvoiceData } from "@/types/invoice";
-
-/** Compute subtotal, VAT (20%), and total from line items */
-export function calcInvoiceTotals(items: InvoiceLineItem[]) {
-  const subtotal = items.reduce((acc, item) => {
-    const v = parseFloat(item.amount.replace(/[^0-9.]/g, ""));
-    return acc + (isNaN(v) ? 0 : v);
-  }, 0);
-  const vat = subtotal * 0.2;
-  const total = subtotal + vat;
-  const fmt = (n: number) =>
-    n === 0
-      ? ""
-      : `£${n.toLocaleString("en-GB", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-  return { subtotal, vat, total, fmtVat: fmt(vat), fmtTotal: fmt(total) };
-}
+import { InvoiceData } from "@/types/invoice";
+import { calcInvoiceTotals } from "@/utils/invoice";
 
 /** Build the self-contained HTML document string for the invoice iframe */
 export function buildInvoiceHtml(

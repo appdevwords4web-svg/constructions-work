@@ -1,5 +1,3 @@
-import React from "react";
-
 // Raw SVG strings for use in dynamic iframe HTML compilation
 export const PIN_SVG_STR = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="display: block;"><circle cx="12" cy="12" r="11" fill="black" stroke="black" stroke-width="1"/><path d="M12 6C9.5 6 7.5 8 7.5 10.5C7.5 13.8 12 18 12 18C12 18 16.5 13.8 16.5 10.5C16.5 8 14.5 6 12 6ZM12 12C11.17 12 10.5 11.33 10.5 10.5C10.5 9.67 11.17 9 12 9C12.83 9 13.5 9.67 13.5 10.5C13.5 11.33 12.83 12 12 12Z" fill="white"/></svg>`;
 

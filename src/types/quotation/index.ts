@@ -22,3 +22,15 @@ export interface QuotationData {
   ownerWebsite?: string;
   paymentTerms?: PaymentTerm[];
 }
+
+export interface QuotationPreviewProps {
+  data: QuotationData;
+}
+
+export interface QuotationPreviewTableProps {
+  items: QuotationLineItem[];
+  totalLabel: string;
+  totals: {
+    total: number;
+  };
+}

@@ -1,4 +1,6 @@
 import React from "react";
+import { InvoiceLineItem } from "./invoice";
+import { PaymentTerm, QuotationLineItem } from "./quotation";
 
 export interface BankDetailsFormProps {
   vatNo: string;
@@ -54,4 +56,32 @@ export interface FormTextareaProps extends Omit<
 > {
   label: string;
   onChange: (value: string) => void;
+}
+
+export interface InvoiceItemRowFormProps {
+  idx: number;
+  item: InvoiceLineItem;
+  showRemove: boolean;
+  onRemove: () => void;
+  onChangeField: (field: keyof InvoiceLineItem, value: string) => void;
+}
+
+export interface PaymentTermRowFormProps {
+  idx: number;
+  term: PaymentTerm;
+  showRemove: boolean;
+  onRemove: (idx: number) => void;
+  onChangeField: (idx: number, field: keyof PaymentTerm, value: string) => void;
+}
+
+export interface QuotationItemRowFormProps {
+  idx: number;
+  item: QuotationLineItem;
+  showRemove: boolean;
+  onRemove: (idx: number) => void;
+  onChangeField: (
+    idx: number,
+    field: keyof QuotationLineItem,
+    value: string,
+  ) => void;
 }

@@ -19,3 +19,11 @@ export interface InvoiceData {
   ownerEmail?: string;
   ownerWebsite?: string;
 }
+
+export interface InvoicePreviewProps {
+  data: InvoiceData;
+}
+
+export interface InvoicePreviewTableProps {
+  items: InvoiceLineItem[];
+}
