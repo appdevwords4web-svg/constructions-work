@@ -59,6 +59,14 @@ export const DOCUMENT_CSS = `
     gap: 8pt;
   }
 
+  .company-info-item.align-center {
+    align-items: center;
+  }
+
+  .company-info-item.align-center .company-info-icon {
+    margin-top: 0;
+  }
+
   .company-info-icon {
     flex-shrink: 0;
     margin-top: 2.5pt;
@@ -271,13 +279,3 @@ export const DOCUMENT_CSS = `
     body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   }
 `;
-
-/** Shared company details hardcoded into documents */
-export const COMPANY = {
-  name: "LIVE CONSTRUCTIONS LTD",
-  tagline: "YOUR DREAMS, OUR AIMS",
-  address: "106 Valley Drive Gravesend, Kent\nDA12 5RX",
-  phones: ["07875592595", "07957200577", "01474520536"],
-  email: "liveconstructionsltd@gmail.com",
-  regNo: "14326005",
-};

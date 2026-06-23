@@ -1,80 +1,44 @@
 "use client";
 
-import { useState, useCallback, useRef } from "react";
-import { COMPANY } from "@/lib/documentStyles";
-import {
-  InvoiceData,
-  InvoiceLineItem,
-  buildInvoiceHtml,
-  calcInvoiceTotals,
-} from "@/lib/invoiceBuilder";
-import { printHtml } from "@/lib/print";
-import { getLogoBase64 } from "@/lib/logo";
+import { useRef, useState } from "react";
+import { COMPANY } from "@/data/company";
+import { InvoiceData, InvoiceLineItem } from "@/types/invoice";
+import { buildInvoiceHtml } from "@/lib/invoiceBuilder";
+import { calcInvoiceTotals } from "@/utils/invoice";
 import { GeneratorHeader } from "@/components/GeneratorHeader";
-import { FormInput, FormTextarea } from "@/components/FormFields";
+import { FormInput } from "@/components/FormFields";
 import { OwnerDetailsForm } from "@/components/OwnerDetailsForm";
 import { ClientDetailsForm } from "@/components/ClientDetailsForm";
 import { BankDetailsForm } from "@/components/BankDetailsForm";
-import { PinIcon, PhoneIcon, EmailIcon } from "@/components/CompanyIcons";
+import { InvoicePreviewHeader } from "@/components/invoice/InvoicePreviewHeader";
+import { InvoicePreviewClient } from "@/components/invoice/InvoicePreviewClient";
+import { InvoicePreviewTable } from "@/components/invoice/InvoicePreviewTable";
+import { InvoicePreviewFooter } from "@/components/invoice/InvoicePreviewFooter";
+import { InvoiceItemRowForm } from "@/components/invoice/InvoiceItemRowForm";
+import { useDocumentEditor } from "@/hooks/useDocumentEditor";
+import { MobileTabBar } from "@/components/MobileTabBar";
+import { Tab } from "@/types/forms";
 
-const DEFAULT_ITEMS: InvoiceLineItem[] = [{ description: "", amount: "" }];
-
-const DEFAULT_DATA: InvoiceData = {
-  invoiceNo: "",
-  date: "",
-  utrNo: "",
-  clientAddress: "",
-  forProject: "Single Story Side Extension",
-  items: DEFAULT_ITEMS,
-  vatNo: "",
-  bank: "",
-  accountNo: "",
-  sortCode: "",
-  ownerAddress: COMPANY.address,
-  ownerPhone: COMPANY.phones.join(" / "),
-  ownerEmail: COMPANY.email,
-};
+import { DEFAULT_DATA } from "@/data/invoice";
 
 export default function InvoicePage() {
-  const [data, setData] = useState<InvoiceData>(DEFAULT_DATA);
-  const [printing, setPrinting] = useState(false);
   const previewRef = useRef<HTMLDivElement>(null);
+  const [activeTab, setActiveTab] = useState<Tab>("form");
+  const [sidebarOpen, setSidebarOpen] = useState(true);
 
-  /* ── Helpers ──────────────────────────────────────────── */
-  const setField = (field: keyof InvoiceData, value: string) =>
-    setData((d) => ({ ...d, [field]: value }));
-
-  const setItem = (idx: number, field: keyof InvoiceLineItem, value: string) =>
-    setData((d) => ({
-      ...d,
-      items: d.items.map((it, i) =>
-        i === idx ? { ...it, [field]: value } : it,
-      ),
-    }));
-
-  const addItem = () =>
-    setData((d) => ({
-      ...d,
-      items: [...d.items, { description: "", amount: "" }],
-    }));
-
-  const removeItem = (idx: number) =>
-    setData((d) => ({
-      ...d,
-      items: d.items.length > 1 ? d.items.filter((_, i) => i !== idx) : d.items,
-    }));
-
-  /* ── Print ─────────────────────────────────────────────── */
-  const handlePrint = useCallback(async () => {
-    setPrinting(true);
-    try {
-      const logoBase64 = await getLogoBase64();
-      const html = buildInvoiceHtml(data, logoBase64);
-      printHtml(html);
-    } finally {
-      setTimeout(() => setPrinting(false), 1500);
-    }
-  }, [data]);
+  const {
+    data,
+    printing,
+    setField,
+    setItem,
+    addItem,
+    removeItem,
+    handlePrint,
+  } = useDocumentEditor<InvoiceData, InvoiceLineItem>(
+    DEFAULT_DATA,
+    () => ({ description: "", amount: "" }),
+    buildInvoiceHtml,
+  );
 
   const totals = calcInvoiceTotals(data.items);
 
@@ -85,141 +49,161 @@ export default function InvoicePage() {
         onPrint={handlePrint}
         printing={printing}
       />
+      <MobileTabBar activeTab={activeTab} onTabChange={setActiveTab} />
 
       <div className="flex flex-1 overflow-hidden">
         {/* ── FORM PANEL ── */}
-        <aside className="w-[400px] min-w-[320px] bg-white border-r border-gray-200 overflow-y-auto p-5 space-y-5 shrink-0 text-gray-800">
-          <OwnerDetailsForm
-            ownerAddress={data.ownerAddress || ""}
-            ownerPhone={data.ownerPhone || ""}
-            ownerEmail={data.ownerEmail || ""}
-            onChangeField={(field, val) => setField(field, val)}
-          />
+        <aside
+          className={`bg-white border-r border-gray-200 text-gray-800 sm:shrink-0 w-full transition-[width] duration-300 overflow-hidden ${sidebarOpen ? "sm:w-[260px] md:w-[320px] lg:w-[400px]" : "sm:w-0"} ${activeTab === "form" ? "flex flex-col" : "hidden"} sm:flex sm:flex-col`}>
+          <div className="flex-1 overflow-y-auto p-5 space-y-5 min-w-[260px] md:min-w-[320px] lg:min-w-[400px]">
+            <OwnerDetailsForm
+              ownerAddress={data.ownerAddress || ""}
+              ownerPhone={data.ownerPhone || ""}
+              ownerEmail={data.ownerEmail || ""}
+              ownerWebsite={data.ownerWebsite || COMPANY.website}
+              onChangeField={(field, val) => setField(field, val)}
+            />
 
-          <section>
-            <h2 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3 border-b pb-1">
-              Invoice Details
-            </h2>
-            <div className="space-y-3">
-              <FormInput
-                label="Invoice No."
-                placeholder="e.g. INV-001"
-                value={data.invoiceNo}
-                onChange={(val) => setField("invoiceNo", val)}
-              />
-              <FormInput
-                label="Date"
-                type="date"
-                value={data.date}
-                onChange={(val) => setField("date", val)}
-              />
-              <FormInput
-                label="UTR No."
-                placeholder="Unique Tax Reference"
-                value={data.utrNo}
-                onChange={(val) => setField("utrNo", val)}
-              />
-            </div>
-          </section>
+            <section>
+              <h2 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3 border-b pb-1">
+                Invoice Details
+              </h2>
+              <div className="space-y-3">
+                <FormInput
+                  label="Invoice No."
+                  placeholder="e.g. INV-001"
+                  value={data.invoiceNo}
+                  onChange={(val) => setField("invoiceNo", val)}
+                />
+                <FormInput
+                  label="Date"
+                  type="date"
+                  value={data.date}
+                  onChange={(val) => setField("date", val)}
+                />
+                <FormInput
+                  label="UTR No."
+                  placeholder="Unique Tax Reference"
+                  value={data.utrNo}
+                  onChange={(val) => setField("utrNo", val)}
+                />
+              </div>
+            </section>
 
-          <ClientDetailsForm
-            clientAddress={data.clientAddress}
-            forProject={data.forProject}
-            projectLabel="For (Project Description)"
-            projectPlaceholder="Single Story Side Extension"
-            onChangeField={(field, val) => setField(field, val)}
-          />
+            <ClientDetailsForm
+              clientAddress={data.clientAddress}
+              forProject={data.forProject}
+              projectLabel="For (Project Description)"
+              projectPlaceholder="Single Story Side Extension"
+              onChangeField={(field, val) => setField(field, val)}
+            />
 
-          <section>
-            <h2 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3 border-b pb-1">
-              Line Items
-            </h2>
-            <div className="space-y-2">
-              {data.items.map((item, idx) => (
-                <div
-                  key={idx}
-                  className="border border-gray-100 rounded-lg p-3 space-y-2 bg-gray-50">
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="text-xs font-semibold text-gray-400">
-                      Item {idx + 1}
-                    </span>
-                    {data.items.length > 1 && (
-                      <button
-                        onClick={() => removeItem(idx)}
-                        className="text-xs text-red-400 hover:text-red-655 cursor-pointer">
-                        Remove
-                      </button>
-                    )}
-                  </div>
-                  <FormTextarea
-                    label="Description"
-                    rows={2}
-                    placeholder="Description"
-                    value={item.description}
-                    onChange={(val) => setItem(idx, "description", val)}
+            <section>
+              <h2 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3 border-b pb-1">
+                Line Items
+              </h2>
+              <div className="space-y-2">
+                {data?.items?.map((item, idx) => (
+                  <InvoiceItemRowForm
+                    key={idx}
+                    idx={idx}
+                    item={item}
+                    showRemove={(data?.items?.length || 0) > 1}
+                    onRemove={() => removeItem(idx)}
+                    onChangeField={(field, val) => setItem(idx, field, val)}
                   />
-                  <FormInput
-                    label="Amount"
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    placeholder="Amount (e.g. 2500)"
-                    value={item.amount}
-                    onChange={(val) => setItem(idx, "amount", val)}
-                  />
+                ))}
+                <button
+                  onClick={addItem}
+                  className="w-full border border-dashed border-blue-300 text-blue-600 hover:bg-blue-50 text-sm py-2 rounded-lg transition-colors font-medium cursor-pointer">
+                  + Add Item
+                </button>
+              </div>
+              {/* Running totals */}
+              <div className="mt-3 bg-gray-50 border border-gray-200 rounded-lg p-3 space-y-1 text-sm text-gray-800">
+                <div className="flex justify-between">
+                  <span className="text-gray-500">Subtotal</span>
+                  <span>
+                    £
+                    {totals.subtotal.toLocaleString("en-GB", {
+                      minimumFractionDigits: 2,
+                    })}
+                  </span>
                 </div>
-              ))}
-              <button
-                onClick={addItem}
-                className="w-full border border-dashed border-blue-300 text-blue-600 hover:bg-blue-50 text-sm py-2 rounded-lg transition-colors font-medium cursor-pointer">
-                + Add Item
-              </button>
-            </div>
-            {/* Running totals */}
-            <div className="mt-3 bg-gray-50 border border-gray-200 rounded-lg p-3 space-y-1 text-sm text-gray-800">
-              <div className="flex justify-between">
-                <span className="text-gray-500">Subtotal</span>
-                <span>
-                  £
-                  {totals.subtotal.toLocaleString("en-GB", {
-                    minimumFractionDigits: 2,
-                  })}
-                </span>
+                <div className="flex justify-between">
+                  <span className="text-gray-550">VAT @ 20%</span>
+                  <span>
+                    £
+                    {totals.vat.toLocaleString("en-GB", {
+                      minimumFractionDigits: 2,
+                    })}
+                  </span>
+                </div>
+                <div className="flex justify-between font-bold border-t border-gray-200 pt-1 mt-1 text-gray-900">
+                  <span>Amount Payable</span>
+                  <span>
+                    £
+                    {totals.total.toLocaleString("en-GB", {
+                      minimumFractionDigits: 2,
+                    })}
+                  </span>
+                </div>
               </div>
-              <div className="flex justify-between">
-                <span className="text-gray-550">VAT @ 20%</span>
-                <span>
-                  £
-                  {totals.vat.toLocaleString("en-GB", {
-                    minimumFractionDigits: 2,
-                  })}
-                </span>
-              </div>
-              <div className="flex justify-between font-bold border-t border-gray-200 pt-1 mt-1 text-gray-900">
-                <span>Amount Payable</span>
-                <span>
-                  £
-                  {totals.total.toLocaleString("en-GB", {
-                    minimumFractionDigits: 2,
-                  })}
-                </span>
-              </div>
-            </div>
-          </section>
+            </section>
 
-          <BankDetailsForm
-            vatNo={data.vatNo}
-            bank={data.bank}
-            accountNo={data.accountNo}
-            sortCode={data.sortCode}
-            onChangeField={(field, val) => setField(field, val)}
-          />
+            <BankDetailsForm
+              vatNo={data?.vatNo}
+              bank={data?.bank}
+              accountNo={data?.accountNo}
+              sortCode={data?.sortCode}
+              onChangeField={(field, val) => setField(field, val)}
+            />
+          </div>
         </aside>
 
         {/* ── A4 PREVIEW PANEL ── */}
-        <main className="flex-1 overflow-auto bg-gray-100 p-8 flex justify-center">
+        <main
+          className={`flex-1 overflow-auto bg-gray-150 p-1 sm:p-4 lg:p-8 relative ${activeTab === "preview" ? "block" : "hidden"} sm:block`}
+          style={{ touchAction: "pan-x pan-y pinch-zoom" }}>
+          {/* Desktop Sidebar Toggle Button */}
+          <button
+            onClick={() => setSidebarOpen((v) => !v)}
+            className="hidden sm:flex absolute left-4 top-4 z-20 bg-white border border-gray-200 shadow-md p-2 rounded-lg text-gray-600 hover:text-gray-900 hover:bg-gray-50 transition-all cursor-pointer items-center justify-center"
+            title={sidebarOpen ? "Collapse sidebar" : "Expand sidebar"}>
+            {sidebarOpen ? (
+              <svg
+                className="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            ) : (
+              <svg
+                className="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4 6h16M4 12h16M4 18h16"
+                />
+              </svg>
+            )}
+          </button>
+
           <div
             ref={previewRef}
+            className="mx-auto"
             style={{
               width: "794px",
               minHeight: "1123px",
@@ -231,303 +215,10 @@ export default function InvoicePage() {
               color: "#111",
               flexShrink: 0,
             }}>
-            {/* HEADER */}
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "flex-start",
-                marginBottom: "24px",
-              }}>
-              <div>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src="/logo.png"
-                  alt="Live Constructions Ltd"
-                  style={{ width: "220px", height: "auto" }}
-                />
-                <div
-                  style={{
-                    marginTop: "10px",
-                    fontSize: "8.5pt",
-                    lineHeight: "1.65",
-                    color: "#000",
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: "8px",
-                  }}>
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "flex-start",
-                      gap: "10px",
-                    }}>
-                    <div style={{ flexShrink: 0, marginTop: "3px" }}>
-                      <PinIcon />
-                    </div>
-                    <div
-                      style={{
-                        fontWeight: "bold",
-                        color: "#000",
-                        lineHeight: "1.45",
-                        whiteSpace: "pre-wrap",
-                      }}>
-                      {data.ownerAddress || COMPANY.address}
-                    </div>
-                  </div>
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "flex-start",
-                      gap: "10px",
-                    }}>
-                    <div style={{ flexShrink: 0, marginTop: "3px" }}>
-                      <PhoneIcon />
-                    </div>
-                    <div
-                      style={{
-                        fontWeight: "bold",
-                        color: "#000",
-                        lineHeight: "1.45",
-                        whiteSpace: "pre-wrap",
-                      }}>
-                      {(data.ownerPhone || COMPANY.phones.join(" / "))
-                        .split(/\s*[\/\n]\s*/)
-                        .filter(Boolean)
-                        .join("\n")}
-                    </div>
-                  </div>
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "flex-start",
-                      gap: "10px",
-                    }}>
-                    <div style={{ flexShrink: 0, marginTop: "3px" }}>
-                      <EmailIcon />
-                    </div>
-                    <div
-                      style={{
-                        fontWeight: "bold",
-                        color: "#000",
-                        lineHeight: "1.45",
-                      }}>
-                      {data.ownerEmail || COMPANY.email}
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div style={{ textAlign: "right", minWidth: "240px" }}>
-                <div
-                  style={{
-                    background: "#1a56a0",
-                    height: "28px",
-                    clipPath: "polygon(10% 0%, 100% 0%, 100% 100%, 0% 100%)",
-                    marginBottom: "8px",
-                  }}
-                />
-                <div
-                  style={{
-                    fontSize: "24pt",
-                    fontWeight: 900,
-                    color: "#4a4a4a",
-                    marginBottom: "10px",
-                  }}>
-                  INVOICE
-                </div>
-                <table
-                  style={{
-                    marginLeft: "auto",
-                    fontSize: "9pt",
-                    borderCollapse: "collapse",
-                  }}>
-                  <tbody>
-                    <tr>
-                      <td
-                        style={{
-                          fontWeight: "bold",
-                          paddingRight: "10px",
-                          textAlign: "left",
-                        }}>
-                        INVOICE NO.
-                      </td>
-                      <td>{data.invoiceNo || "—"}</td>
-                    </tr>
-                    <tr>
-                      <td style={{ fontWeight: "bold", textAlign: "left" }}>
-                        DATE:
-                      </td>
-                      <td>{data.date || "—"}</td>
-                    </tr>
-                    <tr>
-                      <td style={{ fontWeight: "bold", textAlign: "left" }}>
-                        UTR NO.
-                      </td>
-                      <td>{data.utrNo || "—"}</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-
-            {/* CLIENT */}
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                margin: "14px 0 20px",
-                fontSize: "9.5pt",
-              }}>
-              <div>
-                <div style={{ fontWeight: "bold", marginBottom: "4px" }}>
-                  Client Address:
-                </div>
-                <div style={{ whiteSpace: "pre-wrap", lineHeight: "1.6" }}>
-                  {data.clientAddress || "—"}
-                </div>
-              </div>
-              <div style={{ textAlign: "right", whiteSpace: "pre-wrap" }}>
-                For: {data.forProject}
-              </div>
-            </div>
-
-            {/* ITEMS TABLE */}
-            <table
-              style={{
-                width: "100%",
-                borderCollapse: "collapse",
-                fontSize: "9.5pt",
-              }}>
-              <thead>
-                <tr>
-                  <th
-                    style={{
-                      border: "1px solid #000",
-                      padding: "7px 10px",
-                      textAlign: "center",
-                    }}>
-                    DESCRIPTION
-                  </th>
-                  <th
-                    style={{
-                      border: "1px solid #000",
-                      padding: "7px 10px",
-                      width: "110px",
-                      textAlign: "center",
-                    }}>
-                    AMOUNT
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {data.items.map((item, idx) => (
-                  <tr key={idx} style={{ minHeight: "24px" }}>
-                    <td
-                      style={{
-                        border: "1px solid #000",
-                        padding: "6px 10px",
-                        verticalAlign: "top",
-                        whiteSpace: "pre-wrap",
-                      }}>
-                      {item.description}
-                    </td>
-                    <td
-                      style={{
-                        border: "1px solid #000",
-                        padding: "6px 10px",
-                        textAlign: "right",
-                        width: "110px",
-                        whiteSpace: "nowrap",
-                      }}>
-                      {item.amount
-                        ? `£${parseFloat(item.amount.replace(/[^0-9.]/g, "") || "0").toLocaleString("en-GB", { minimumFractionDigits: 2 })}`
-                        : ""}
-                    </td>
-                  </tr>
-                ))}
-                {Array.from({ length: Math.max(0, 8 - data.items.length) }).map(
-                  (_, i) => (
-                    <tr key={`blank-${i}`} style={{ height: "26px" }}>
-                      <td style={{ border: "1px solid #000" }}></td>
-                      <td style={{ border: "1px solid #000" }}></td>
-                    </tr>
-                  ),
-                )}
-                <tr>
-                  <td
-                    style={{
-                      border: "1px solid #000",
-                      padding: "6px 10px",
-                      textAlign: "right",
-                      fontSize: "9pt",
-                    }}>
-                    VAT @ 20%
-                  </td>
-                  <td
-                    style={{
-                      border: "1px solid #000",
-                      padding: "6px 10px",
-                      textAlign: "right",
-                      width: "110px",
-                    }}>
-                    {totals.fmtVat}
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-
-            {/* AMOUNT PAYABLE */}
-            <table
-              style={{
-                width: "100%",
-                borderCollapse: "collapse",
-                fontSize: "9.5pt",
-              }}>
-              <tbody>
-                <tr>
-                  <td
-                    style={{
-                      border: "1px solid #000",
-                      borderTop: "none",
-                      padding: "7px 10px",
-                      fontWeight: "bold",
-                      textAlign: "right",
-                    }}>
-                    AMOUNT PAYABLE
-                  </td>
-                  <td
-                    style={{
-                      border: "2px solid #000",
-                      borderTop: "none",
-                      padding: "7px 10px",
-                      textAlign: "right",
-                      width: "110px",
-                      fontWeight: "bold",
-                    }}>
-                    {totals.fmtTotal}
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-
-            {/* FOOTER */}
-            <div
-              style={{ marginTop: "22px", fontSize: "9pt", lineHeight: "1.8" }}>
-              <div>
-                <strong>VAT NO:</strong> {data.vatNo}
-              </div>
-              <div>Company Registered in England and Wales No: 14326005</div>
-              <br />
-              <div>
-                <strong>BANK:</strong> {data.bank}
-              </div>
-              <div>
-                <strong>A/C No:</strong> {data.accountNo}
-              </div>
-              <div>
-                <strong>Sort Code:</strong> {data.sortCode}
-              </div>
-            </div>
+            <InvoicePreviewHeader data={data} />
+            <InvoicePreviewClient data={data} />
+            <InvoicePreviewTable items={data?.items} />
+            <InvoicePreviewFooter data={data} />
           </div>
         </main>
       </div>

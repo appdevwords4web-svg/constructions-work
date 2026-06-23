@@ -1,45 +1,13 @@
-import { DOCUMENT_CSS, COMPANY } from "./documentStyles";
+import { DOCUMENT_CSS } from "./documentStyles";
+import { COMPANY } from "@/data/company";
 import {
   PIN_SVG_STR,
   PHONE_SVG_STR,
   EMAIL_SVG_STR,
+  WEBSITE_SVG_STR,
 } from "../components/CompanyIcons";
-
-export interface InvoiceLineItem {
-  description: string;
-  amount: string;
-}
-
-export interface InvoiceData {
-  invoiceNo: string;
-  date: string;
-  utrNo: string;
-  clientAddress: string;
-  forProject: string;
-  items: InvoiceLineItem[];
-  vatNo: string;
-  bank: string;
-  accountNo: string;
-  sortCode: string;
-  ownerAddress?: string;
-  ownerPhone?: string;
-  ownerEmail?: string;
-}
-
-/** Compute subtotal, VAT (20%), and total from line items */
-export function calcInvoiceTotals(items: InvoiceLineItem[]) {
-  const subtotal = items.reduce((acc, item) => {
-    const v = parseFloat(item.amount.replace(/[^0-9.]/g, ""));
-    return acc + (isNaN(v) ? 0 : v);
-  }, 0);
-  const vat = subtotal * 0.2;
-  const total = subtotal + vat;
-  const fmt = (n: number) =>
-    n === 0
-      ? ""
-      : `£${n.toLocaleString("en-GB", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-  return { subtotal, vat, total, fmtVat: fmt(vat), fmtTotal: fmt(total) };
-}
+import { InvoiceData } from "@/types/invoice";
+import { calcInvoiceTotals } from "@/utils/invoice";
 
 /** Build the self-contained HTML document string for the invoice iframe */
 export function buildInvoiceHtml(
@@ -79,6 +47,7 @@ export function buildInvoiceHtml(
     .filter(Boolean)
     .join("<br>");
   const emailLine = data.ownerEmail || COMPANY.email;
+  const websiteLine = data.ownerWebsite || COMPANY.website;
   const clientLines = data.clientAddress.replace(/\n/g, "<br>");
   const forProjectLines = (data.forProject || "").replace(/\n/g, "<br>");
 
@@ -122,9 +91,13 @@ export function buildInvoiceHtml(
           <div class="company-info-icon">${PHONE_SVG_STR}</div>
           <div class="company-info-text">${phoneLines}</div>
         </div>
-        <div class="company-info-item">
+        <div class="company-info-item align-center">
           <div class="company-info-icon">${EMAIL_SVG_STR}</div>
           <div class="company-info-text">${emailLine}</div>
+        </div>
+        <div class="company-info-item align-center">
+          <div class="company-info-icon">${WEBSITE_SVG_STR}</div>
+          <div class="company-info-text">${websiteLine}</div>
         </div>
       </div>
     </div>

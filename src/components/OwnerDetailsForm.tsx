@@ -1,20 +1,11 @@
-import React from "react";
 import { FormInput, FormTextarea } from "./FormFields";
-
-interface OwnerDetailsFormProps {
-  ownerAddress: string;
-  ownerPhone: string;
-  ownerEmail: string;
-  onChangeField: (
-    field: "ownerAddress" | "ownerPhone" | "ownerEmail",
-    value: string,
-  ) => void;
-}
+import { OwnerDetailsFormProps } from "@/types/forms";
 
 export function OwnerDetailsForm({
   ownerAddress,
   ownerPhone,
   ownerEmail,
+  ownerWebsite,
   onChangeField,
 }: OwnerDetailsFormProps) {
   return (
@@ -42,6 +33,13 @@ export function OwnerDetailsForm({
           placeholder="liveconstructionsltd@gmail.com"
           value={ownerEmail}
           onChange={(val) => onChangeField("ownerEmail", val)}
+        />
+        <FormInput
+          label="Website"
+          type="url"
+          placeholder="https://liveconstructionsltd.co.uk"
+          value={ownerWebsite}
+          onChange={(val) => onChangeField("ownerWebsite", val)}
         />
       </div>
     </section>
