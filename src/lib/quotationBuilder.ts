@@ -1,68 +1,14 @@
-import { DOCUMENT_CSS, COMPANY } from "./documentStyles";
+import { DOCUMENT_CSS } from "./documentStyles";
+import { COMPANY } from "@/data/company";
 import {
   PIN_SVG_STR,
   PHONE_SVG_STR,
   EMAIL_SVG_STR,
   WEBSITE_SVG_STR,
 } from "../components/CompanyIcons";
-
-export interface QuotationLineItem {
-  title: string;
-  description: string;
-  amount: string;
-}
-
-export interface PaymentTerm {
-  description: string;
-  percentage: string;
-}
-
-export const DEFAULT_PAYMENT_TERMS: PaymentTerm[] = [
-  { description: "Initial Payment at start of the project", percentage: "20%" },
-  { description: "Second payment due at DPC Level", percentage: "20%" },
-  {
-    description: "Third payment due at ground floor wall Plate Level",
-    percentage: "15%",
-  },
-  {
-    description: "Fourth payment due at the first-floor wall plate Level",
-    percentage: "20%",
-  },
-  {
-    description: "Fourth payment at completion of the roof structure",
-    percentage: "20%",
-  },
-  {
-    description: "Final payment due at Completion of our work",
-    percentage: "5%",
-  },
-];
-
-export interface QuotationData {
-  quotationNo: string;
-  date: string;
-  clientAddress: string;
-  forProject: string;
-  items: QuotationLineItem[];
-  totalLabel: string; // e.g. "Side Double Story Extension"
-  ownerAddress?: string;
-  ownerPhone?: string;
-  ownerEmail?: string;
-  ownerWebsite?: string;
-  paymentTerms?: PaymentTerm[];
-}
-
-export function calcQuotationTotal(items: QuotationLineItem[]) {
-  const total = items.reduce((acc, item) => {
-    const v = parseFloat(item.amount.replace(/[^0-9.]/g, ""));
-    return acc + (isNaN(v) ? 0 : v);
-  }, 0);
-  const fmt = (n: number) =>
-    n === 0
-      ? ""
-      : `£${n.toLocaleString("en-GB", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-  return { total, fmtTotal: fmt(total) };
-}
+import { QuotationData } from "@/types/quotation";
+import { DEFAULT_PAYMENT_TERMS } from "@/data/quotation";
+import { calcQuotationTotal } from "@/utils/quotation";
 
 export function buildQuotationHtml(
   data: QuotationData,

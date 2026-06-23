@@ -1,16 +1,5 @@
-import React from "react";
 import { FormInput, FormTextarea } from "./FormFields";
-
-interface ClientDetailsFormProps {
-  clientAddress: string;
-  forProject: string;
-  projectLabel: string;
-  projectPlaceholder: string;
-  onChangeField: (field: "clientAddress" | "forProject", value: string) => void;
-  // Optional field specifically for Quotation page
-  totalLabel?: string;
-  onChangeTotalLabel?: (value: string) => void;
-}
+import { ClientDetailsFormProps } from "@/types/forms";
 
 export function ClientDetailsForm({
   clientAddress,

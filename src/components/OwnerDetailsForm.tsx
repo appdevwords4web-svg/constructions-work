@@ -1,16 +1,5 @@
-import React from "react";
 import { FormInput, FormTextarea } from "./FormFields";
-
-interface OwnerDetailsFormProps {
-  ownerAddress: string;
-  ownerPhone: string;
-  ownerEmail: string;
-  ownerWebsite: string;
-  onChangeField: (
-    field: "ownerAddress" | "ownerPhone" | "ownerEmail" | "ownerWebsite",
-    value: string,
-  ) => void;
-}
+import { OwnerDetailsFormProps } from "@/types/forms";
 
 export function OwnerDetailsForm({
   ownerAddress,
