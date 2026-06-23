@@ -15,7 +15,12 @@ import { FormInput, FormTextarea } from "@/components/FormFields";
 import { OwnerDetailsForm } from "@/components/OwnerDetailsForm";
 import { ClientDetailsForm } from "@/components/ClientDetailsForm";
 import { BankDetailsForm } from "@/components/BankDetailsForm";
-import { PinIcon, PhoneIcon, EmailIcon } from "@/components/CompanyIcons";
+import {
+  PinIcon,
+  PhoneIcon,
+  EmailIcon,
+  WebsiteIcon,
+} from "@/components/CompanyIcons";
 
 const DEFAULT_ITEMS: InvoiceLineItem[] = [{ description: "", amount: "" }];
 
@@ -33,6 +38,7 @@ const DEFAULT_DATA: InvoiceData = {
   ownerAddress: COMPANY.address,
   ownerPhone: COMPANY.phones.join(" / "),
   ownerEmail: COMPANY.email,
+  ownerWebsite: COMPANY.website,
 };
 
 export default function InvoicePage() {
@@ -93,6 +99,7 @@ export default function InvoicePage() {
             ownerAddress={data.ownerAddress || ""}
             ownerPhone={data.ownerPhone || ""}
             ownerEmail={data.ownerEmail || ""}
+            ownerWebsite={data.ownerWebsite || COMPANY.website}
             onChangeField={(field, val) => setField(field, val)}
           />
 
@@ -300,10 +307,10 @@ export default function InvoicePage() {
                   <div
                     style={{
                       display: "flex",
-                      alignItems: "flex-start",
+                      alignItems: "center",
                       gap: "10px",
                     }}>
-                    <div style={{ flexShrink: 0, marginTop: "3px" }}>
+                    <div style={{ flexShrink: 0 }}>
                       <EmailIcon />
                     </div>
                     <div
@@ -313,6 +320,24 @@ export default function InvoicePage() {
                         lineHeight: "1.45",
                       }}>
                       {data.ownerEmail || COMPANY.email}
+                    </div>
+                  </div>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "10px",
+                    }}>
+                    <div style={{ flexShrink: 0 }}>
+                      <WebsiteIcon />
+                    </div>
+                    <div
+                      style={{
+                        fontWeight: "bold",
+                        color: "#000",
+                        lineHeight: "1.45",
+                      }}>
+                      {data.ownerWebsite || COMPANY.website}
                     </div>
                   </div>
                 </div>

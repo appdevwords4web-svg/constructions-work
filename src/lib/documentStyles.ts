@@ -59,6 +59,14 @@ export const DOCUMENT_CSS = `
     gap: 8pt;
   }
 
+  .company-info-item.align-center {
+    align-items: center;
+  }
+
+  .company-info-item.align-center .company-info-icon {
+    margin-top: 0;
+  }
+
   .company-info-icon {
     flex-shrink: 0;
     margin-top: 2.5pt;
@@ -279,5 +287,6 @@ export const COMPANY = {
   address: "106 Valley Drive Gravesend, Kent\nDA12 5RX",
   phones: ["07875592595", "07957200577", "01474520536"],
   email: "liveconstructionsltd@gmail.com",
+  website: "https://liveconstructionsltd.co.uk",
   regNo: "14326005",
 };

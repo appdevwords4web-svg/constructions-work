@@ -3,6 +3,7 @@ import {
   PIN_SVG_STR,
   PHONE_SVG_STR,
   EMAIL_SVG_STR,
+  WEBSITE_SVG_STR,
 } from "../components/CompanyIcons";
 
 export interface InvoiceLineItem {
@@ -24,6 +25,7 @@ export interface InvoiceData {
   ownerAddress?: string;
   ownerPhone?: string;
   ownerEmail?: string;
+  ownerWebsite?: string;
 }
 
 /** Compute subtotal, VAT (20%), and total from line items */
@@ -79,6 +81,7 @@ export function buildInvoiceHtml(
     .filter(Boolean)
     .join("<br>");
   const emailLine = data.ownerEmail || COMPANY.email;
+  const websiteLine = data.ownerWebsite || COMPANY.website;
   const clientLines = data.clientAddress.replace(/\n/g, "<br>");
   const forProjectLines = (data.forProject || "").replace(/\n/g, "<br>");
 
@@ -122,9 +125,13 @@ export function buildInvoiceHtml(
           <div class="company-info-icon">${PHONE_SVG_STR}</div>
           <div class="company-info-text">${phoneLines}</div>
         </div>
-        <div class="company-info-item">
+        <div class="company-info-item align-center">
           <div class="company-info-icon">${EMAIL_SVG_STR}</div>
           <div class="company-info-text">${emailLine}</div>
+        </div>
+        <div class="company-info-item align-center">
+          <div class="company-info-icon">${WEBSITE_SVG_STR}</div>
+          <div class="company-info-text">${websiteLine}</div>
         </div>
       </div>
     </div>
