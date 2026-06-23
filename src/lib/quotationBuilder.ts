@@ -5,17 +5,11 @@ import {
   EMAIL_SVG_STR,
   WEBSITE_SVG_STR,
 } from "../components/CompanyIcons";
-
-export interface QuotationLineItem {
-  title: string;
-  description: string;
-  amount: string;
-}
-
-export interface PaymentTerm {
-  description: string;
-  percentage: string;
-}
+import {
+  QuotationLineItem,
+  PaymentTerm,
+  QuotationData,
+} from "@/types/quotation";
 
 export const DEFAULT_PAYMENT_TERMS: PaymentTerm[] = [
   { description: "Initial Payment at start of the project", percentage: "20%" },
@@ -37,20 +31,6 @@ export const DEFAULT_PAYMENT_TERMS: PaymentTerm[] = [
     percentage: "5%",
   },
 ];
-
-export interface QuotationData {
-  quotationNo: string;
-  date: string;
-  clientAddress: string;
-  forProject: string;
-  items: QuotationLineItem[];
-  totalLabel: string; // e.g. "Side Double Story Extension"
-  ownerAddress?: string;
-  ownerPhone?: string;
-  ownerEmail?: string;
-  ownerWebsite?: string;
-  paymentTerms?: PaymentTerm[];
-}
 
 export function calcQuotationTotal(items: QuotationLineItem[]) {
   const total = items.reduce((acc, item) => {

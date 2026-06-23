@@ -1,17 +1,10 @@
 import React from "react";
+import { FormInputProps, FormTextareaProps } from "@/types/forms";
 
 const labelCls =
   "block text-xs font-semibold text-gray-500 uppercase mb-1 tracking-wide";
 const inputCls =
   "w-full border border-gray-200 rounded px-2.5 py-1.5 text-sm focus:outline-none focus:border-blue-500 bg-white text-gray-900 placeholder-gray-400";
-
-interface FormInputProps extends Omit<
-  React.InputHTMLAttributes<HTMLInputElement>,
-  "onChange"
-> {
-  label: string;
-  onChange: (value: string) => void;
-}
 
 export function FormInput({
   label,
@@ -31,14 +24,6 @@ export function FormInput({
       />
     </div>
   );
-}
-
-interface FormTextareaProps extends Omit<
-  React.TextareaHTMLAttributes<HTMLTextAreaElement>,
-  "onChange"
-> {
-  label: string;
-  onChange: (value: string) => void;
 }
 
 export function FormTextarea({

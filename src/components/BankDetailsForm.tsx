@@ -1,16 +1,6 @@
 import React from "react";
 import { FormInput } from "./FormFields";
-
-interface BankDetailsFormProps {
-  vatNo: string;
-  bank: string;
-  accountNo: string;
-  sortCode: string;
-  onChangeField: (
-    field: "vatNo" | "bank" | "accountNo" | "sortCode",
-    value: string,
-  ) => void;
-}
+import { BankDetailsFormProps } from "@/types/forms";
 
 export function BankDetailsForm({
   vatNo,

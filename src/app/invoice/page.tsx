@@ -2,12 +2,8 @@
 
 import { useState, useCallback, useRef } from "react";
 import { COMPANY } from "@/lib/documentStyles";
-import {
-  InvoiceData,
-  InvoiceLineItem,
-  buildInvoiceHtml,
-  calcInvoiceTotals,
-} from "@/lib/invoiceBuilder";
+import { InvoiceData, InvoiceLineItem } from "@/types/invoice";
+import { buildInvoiceHtml, calcInvoiceTotals } from "@/lib/invoiceBuilder";
 import { printHtml } from "@/lib/print";
 import { getLogoBase64 } from "@/lib/logo";
 import { GeneratorHeader } from "@/components/GeneratorHeader";

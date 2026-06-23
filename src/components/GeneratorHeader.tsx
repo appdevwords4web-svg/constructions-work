@@ -1,12 +1,5 @@
-import React from "react";
 import { useRouter } from "next/navigation";
-
-interface GeneratorHeaderProps {
-  title: string;
-  onPrint: () => void;
-  printing: boolean;
-  accentClass?: string;
-}
+import { GeneratorHeaderProps } from "@/types/forms";
 
 export function GeneratorHeader({
   title,

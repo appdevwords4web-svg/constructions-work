@@ -5,9 +5,11 @@ import { COMPANY } from "@/lib/documentStyles";
 import {
   QuotationData,
   QuotationLineItem,
+  PaymentTerm,
+} from "@/types/quotation";
+import {
   buildQuotationHtml,
   calcQuotationTotal,
-  PaymentTerm,
   DEFAULT_PAYMENT_TERMS,
 } from "@/lib/quotationBuilder";
 import { printHtml } from "@/lib/print";
